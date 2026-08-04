@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Emberfall — Celestial & Magic Edition</title>
+<meta name="description" content="Emberfall is an open-world browser RPG with wands, bows, mounts, celestial sun/moon, and shopping.">
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=6.1">
+</head>
+<body>
+
+<!-- ── Start Screen ──────────────────────────────────────────────────── -->
+<div id="start">
+  <h1>EMBERFALL</h1>
+  <div class="sub">celestial & magic edition</div>
+  <div class="keys">
+    WASD — move (swim in pink water) &nbsp;·&nbsp; SHIFT — sprint &nbsp;·&nbsp; SPACE — jump (float up)<br>
+    MOUSE — look &nbsp;·&nbsp; LEFT CLICK — cast wand or shoot bow &nbsp;·&nbsp; ESC — release cursor<br>
+    CONTROL — sparkle roll (costs stamina, grants temporary invincibility)<br>
+    Q — Star Burst &nbsp;·&nbsp; E — Sparkle Leap &nbsp;·&nbsp; R — Fairy Blessing &nbsp;·&nbsp; F — Heart Shot<br>
+    B — Toggle Build Mode &nbsp;·&nbsp; 1/2 — Select Hearth (6 logs) / Pastel Fence (4 logs)<br>
+    U — Summon Sparkle Cloud Mount &nbsp;·&nbsp; X — Toggle Wand / Bow Stance (when unlocked)<br>
+    H — Talk to Fairy Lily NPC &nbsp;·&nbsp; I — Toggle Inventory Panel
+  </div>
+  <input id="playerName" type="text" placeholder="enter your name" maxlength="24">
+  <button id="startBtn">Enter the Kingdom</button>
+  <button id="leaderboardBtn" class="secondary">View Leaderboard</button>
+  <div id="leaderboard" class="panel" style="display:none;"></div>
+</div>
+
+<!-- ── Death Screen ──────────────────────────────────────────────────── -->
+<div id="dead" style="display:none;">
+  <h1>MAGIC FADED</h1>
+  <div class="sub" id="deadStats"></div>
+  <div id="saveStatus" class="sub" style="min-height:18px;"></div>
+  <button id="saveScoreBtn">Save Score</button>
+  <button id="respawnBtn">Revive Princess</button>
+</div>
+
+<!-- ── HUD ───────────────────────────────────────────────────────────── -->
+<div id="hud" style="display:none;">
+
+  <!-- Click-to-lock hint -->
+  <div id="click-hint">CLICK TO CAST SPELLS</div>
+
+  <!-- Compass -->
+  <div id="compass"><div id="compass-strip"></div></div>
+
+  <!-- Quest Tracker -->
+  <div id="quest-tracker">
+    <div id="quest-title">ACTIVE QUEST</div>
+    <div id="quest-desc">Loading...</div>
+    <div id="quest-progress-bar">
+      <div id="quest-progress"></div>
+    </div>
+    <div id="quest-count">0/0</div>
+  </div>
+
+  <!-- Weather Badge -->
+  <div id="weather-badge" style="display:none;"></div>
+
+  <!-- Boss health bar -->
+  <div id="boss-bar" style="display:none;">
+    <div id="boss-name">⚔ SHADOW OVERLORD ⚔</div>
+    <div id="boss-fill-wrap"><div id="boss-fill"></div></div>
+  </div>
+
+  <!-- Kill feed -->
+  <div id="killfeed"></div>
+
+  <!-- Notifications -->
+  <div id="notification"></div>
+
+  <!-- Level-up flash -->
+  <div id="levelup">POWER LEVEL UP</div>
+
+  <!-- Combo counter -->
+  <div id="combo"></div>
+
+  <!-- Minimap and Controls -->
+  <div id="minimap"><div id="minimap-inner"></div></div>
+  <div id="mm-controls">
+    <button class="zoom-btn" id="mm-zoom-in">+</button>
+    <button class="zoom-btn" id="mm-zoom-out">-</button>
+  </div>
+
+  <!-- Campfire Recovery indicator -->
+  <div id="campfire-indicator" style="display:none;">🌸 Resting by Hearth (+HP healing)</div>
+
+  <!-- Build Overlay -->
+  <div id="build-overlay">
+    <div id="build-name">FLOWER HEARTH</div>
+    <div id="build-cost">Cost: 6 logs</div>
+    <div id="build-wood-current">You have: 0 logs</div>
+  </div>
+
+  <!-- Shop Near NPC Prompt (NEW) -->
+  <div id="shop-prompt">Press H to talk to Fairy Lily</div>
+
+  <!-- Damage flash vignette -->
+  <div id="dmg-flash"></div>
+
+  <!-- Inventory panel overlay -->
+  <div id="inventory-panel">
+    <h3>Inventory</h3>
+    <div id="inventory-grid"></div>
+  </div>
+
+  <!-- Player stats and resource displays -->
+  <div id="lvl">LV. <span id="lvlnum">1</span> &nbsp;—&nbsp; <span id="killnum">0</span> DEFEATED</div>
+  <div id="xp"><div id="xp-fill"></div></div>
+  
+  <div class="bar-wrap">
+    <div class="bar hp">
+      <div class="bar-label">HP ❤</div>
+      <div class="bar-fill" id="hp-fill" style="width:100%"></div>
+      <div class="bar-val" id="hp-val">120/120</div>
+    </div>
+    <div class="bar mp">
+      <div class="bar-label">MP ★</div>
+      <div class="bar-fill" id="mp-fill" style="width:100%"></div>
+      <div class="bar-val" id="mp-val">80/80</div>
+    </div>
+    <div class="bar sp">
+      <div class="bar-label">SP 🕊</div>
+      <div class="bar-fill" id="sp-fill" style="width:100%"></div>
+      <div class="bar-val" id="sp-val">100/100</div>
+    </div>
+  </div>
+
+  <div id="resources">
+    <div class="res-item">💰 <span id="gold-val">0</span>g</div>
+    <div class="res-item">🪵 <span id="wood-val">0</span></div>
+  </div>
+
+  <!-- Ability bar -->
+  <div id="ability-bar">
+    <div class="ab-slot ab-ready" id="ab-slam">
+      <div class="ab-cd"></div>
+      <div class="ab-key">Q</div>
+      <div class="ab-icon">✨</div>
+      <div class="ab-label">BURST</div>
+    </div>
+    <div class="ab-slot ab-ready" id="ab-dash">
+      <div class="ab-cd"></div>
+      <div class="ab-key">E</div>
+      <div class="ab-icon">🕊</div>
+      <div class="ab-label">LEAP</div>
+    </div>
+    <div class="ab-slot ab-ready" id="ab-pact">
+      <div class="ab-cd"></div>
+      <div class="ab-key">R</div>
+      <div class="ab-icon">🎀</div>
+      <div class="ab-label">BLESSING</div>
+    </div>
+    <div class="ab-slot ab-ready" id="ab-fire">
+      <div class="ab-cd"></div>
+      <div class="ab-key">F</div>
+      <div class="ab-icon">💖</div>
+      <div class="ab-label">HEART</div>
+    </div>
+  </div>
+
+  <!-- Stance indicator & Biome indicator -->
+  <div id="stance-badge">🪄 WAND</div>
+  <div id="biome-tag">Cherry Reach</div>
+
+  <!-- Crosshair -->
+  <div id="crosshair"></div>
+
+  <!-- Floating damage numbers container -->
+  <div id="dmg-container"></div>
+
+</div>
+
+<!-- Fairy Shop Modal (NEW) -->
+<div id="shop-modal">
+  <h2>Fairy Lily's Shop</h2>
+  <div id="shop-sub">Spend your gold here!</div>
+  <div id="shop-gold-current">Your Gold: 30g</div>
+  <div id="shop-items">
+    <div class="shop-card" onclick="buyShopItem('tonic')">
+      <div class="shop-icon">🧃</div>
+      <div class="shop-name">Berry Elixir</div>
+      <div class="shop-desc">Restores 40 HP instantly</div>
+      <div class="shop-cost">Cost: 30g</div>
+    </div>
+    <div class="shop-card" onclick="buyShopItem('tiara')">
+      <div class="shop-icon">👗</div>
+      <div class="shop-name">Princess Gown</div>
+      <div class="shop-desc">Permanently adds +50 Max HP</div>
+      <div class="shop-cost">Cost: 100g</div>
+    </div>
+    <div class="shop-card" onclick="buyShopItem('bow')">
+      <div class="shop-icon">🏹</div>
+      <div class="shop-name">Bow of Light</div>
+      <div class="shop-desc">Unlocks Ranged Archery! Toggle with X</div>
+      <div class="shop-cost">Cost: 150g</div>
+    </div>
+  </div>
+  <button style="margin-top:24px;" onclick="closeShop()">Close Shop</button>
+</div>
+
+<!-- Perk Selection Modal -->
+<div id="perk-modal">
+  <h2>CHOOSE A BLESSING</h2>
+  <div id="perk-options"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.min.js"></script>
+<script src="game.js?v=6.1"></script>
+</body>
+</html>
